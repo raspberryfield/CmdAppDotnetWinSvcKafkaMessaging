@@ -1,0 +1,11 @@
+syntax = "proto3";
+package tutorial;
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Raspberryfield.Protobuf.Person";
+
+message Person {
+  string name = 1;
+  int32 age = 2;
+}

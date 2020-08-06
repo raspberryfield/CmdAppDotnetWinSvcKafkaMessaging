@@ -1,0 +1,12 @@
+
+
+#Nugets
+* Class LogHandler utilizes the library Serilog.Sinks.File
+* So the application can be run as a Windows service, the library Topshelf is used.
+* Communicate with kafka topic, library Confluent.Kafka is needed.
+* Handle protobuf format, library Google.Protobuf is needed.
+
+#Protobuf
+* Create a class from a .proto file with the protoc compiler.
+* protoc -I=$SRC_DIR --csharp_out=$DST_DIR $SRC_DIR/person.proto
+> protoc -I=. --csharp_out=. ./person.proto
