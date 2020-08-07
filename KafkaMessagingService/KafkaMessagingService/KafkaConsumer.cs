@@ -25,7 +25,7 @@ namespace KafkaMessagingService
             var consumerConfig = new ConsumerConfig
             {
                 GroupId = "test-consumer-group",
-                BootstrapServers = "172.18.82.14:9092",
+                BootstrapServers = "172.18.38.53:9092",
                 AutoOffsetReset = AutoOffsetReset.Earliest
             };
 

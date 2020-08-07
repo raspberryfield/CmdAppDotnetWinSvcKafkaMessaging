@@ -15,6 +15,7 @@ namespace KafkaMessagingService
         private static Thread _mainThread;
 
         private static bool _running;
+        private static CancellationTokenSource _cancellationTokenSrc;
         
 
         public KafkaMessageService(ILogger logger, IConsumer<Ignore, Person> kafkaConsumer)
@@ -23,6 +24,7 @@ namespace KafkaMessagingService
             _kafkaConsumer = kafkaConsumer;
             _mainThread = new Thread(MainMessageService);
             _mainThread.IsBackground = true;
+            _cancellationTokenSrc = new CancellationTokenSource();
         }
 
         public bool Start()
@@ -43,6 +45,8 @@ namespace KafkaMessagingService
             _logger.Information(">> Stop called.");
             Console.WriteLine(">> Stop called.");
 
+            //...
+            _cancellationTokenSrc.Cancel();
             _running = false;
             Thread.Sleep(1000); // Give time to thread to finish it work.
 
@@ -51,19 +55,41 @@ namespace KafkaMessagingService
         public static void MainMessageService()
         {
             _running = true;
-            int iterator = 0;
+                       
+            _logger.Information(">> Start Kafka Messaging Service (MainMessageService).");
+            Console.WriteLine(">> Start Kafka Messaging Service (MainMessageService).");
 
-            while (_running)
+            using (_kafkaConsumer)
             {
-                Thread.Sleep(1000);
-                _logger.Information(">> Iteration: " + iterator);
-                Console.WriteLine(">> Iteration: " + iterator);
-                iterator++;
+                _kafkaConsumer.Subscribe("my_first_topic");//TODO: config file.
+
+                try
+                {
+                    while (_running)
+                    {
+                        try
+                        {
+                            var consumerResult = _kafkaConsumer.Consume(_cancellationTokenSrc.Token);
+                            _logger.Information($">> Consumed message '{consumerResult.Message.Value}' at: '{consumerResult.TopicPartitionOffset}'.");
+                            Console.WriteLine($">> Consumed message '{consumerResult.Message.Value}' at: '{consumerResult.TopicPartitionOffset}'.");
+                        }
+                        catch (ConsumeException e)
+                        {
+                            _logger.Information($">> Consume Error occured: {e.Error.Reason}");
+                            Console.WriteLine($">> Consume Error occured: {e.Error.Reason}");
+                        }
+                    }
+                    _logger.Information($">> Exited Consume Loop.");
+                    Console.WriteLine($">> Exited Consume Loop.");                    
+                }
+                catch (OperationCanceledException e)
+                {
+                    // Ensure the consumer leaves the group cleanly and final offsets are committed.
+                    _kafkaConsumer.Close();
+                    _logger.Information($">> Kafka consumer closed: '{e}'.");
+                    Console.WriteLine($">> Kafka consumer closed: '{e}'.");
+                }
             }
-            _logger.Information(">> After while loop in MainLogging().");
-            Console.WriteLine(">> After while loop in MainLogging().");
-
-
 
         }
     }
