@@ -20,12 +20,14 @@ namespace KafkaMessagingService
                                
                 //create a KafkaConsumer
                 var consumer = KafkaConsumer.Consumer;
-
+                //Create SQL Handler - connections etc.
+                var sqlHandler = new SQLhandler();
+                
                 var exitCode = HostFactory.Run(x =>
                 {
                     x.Service<KafkaMessageService>(s =>
                     {
-                        s.ConstructUsing(kafkaMessageService => new KafkaMessageService(logger, consumer));
+                        s.ConstructUsing(kafkaMessageService => new KafkaMessageService(logger, consumer, sqlHandler));
                         s.WhenStarted(kafkaMessageService => kafkaMessageService.Start());
                         s.WhenStopped(kafkaMessageService => kafkaMessageService.Stop());
                     });

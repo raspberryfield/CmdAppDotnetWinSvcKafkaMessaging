@@ -3,8 +3,11 @@ using Raspberryfield.Protobuf.Person;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using Topshelf;
+using Topshelf.Builders;
 
 namespace KafkaMessagingService
 {
@@ -12,16 +15,18 @@ namespace KafkaMessagingService
     {
         private static ILogger _logger;
         private static IConsumer<Ignore, Person> _kafkaConsumer;
+        private static SQLhandler _sqlHandler;
         private static Thread _mainThread;
 
         private static bool _running;
         private static CancellationTokenSource _cancellationTokenSrc;
         
 
-        public KafkaMessageService(ILogger logger, IConsumer<Ignore, Person> kafkaConsumer)
+        public KafkaMessageService(ILogger logger, IConsumer<Ignore, Person> kafkaConsumer, SQLhandler sqlHandler)
         {
             _logger = logger;
             _kafkaConsumer = kafkaConsumer;
+            _sqlHandler = sqlHandler;
             _mainThread = new Thread(MainMessageService);
             _mainThread.IsBackground = true;
             _cancellationTokenSrc = new CancellationTokenSource();
@@ -35,7 +40,7 @@ namespace KafkaMessagingService
             _logger.Information(">> Starting Service Thread.");
             Console.WriteLine(">> Starting Service Thread.");
             _mainThread.Start();
-
+            
             return true;
 
         }
@@ -55,7 +60,7 @@ namespace KafkaMessagingService
         public static void MainMessageService()
         {
             _running = true;
-                       
+                      
             _logger.Information(">> Start Kafka Messaging Service (MainMessageService).");
             Console.WriteLine(">> Start Kafka Messaging Service (MainMessageService).");
 
@@ -72,13 +77,15 @@ namespace KafkaMessagingService
                             var consumerResult = _kafkaConsumer.Consume(_cancellationTokenSrc.Token);
                             _logger.Information($">> Consumed message '{consumerResult.Message.Value}' at: '{consumerResult.TopicPartitionOffset}'.");
                             Console.WriteLine($">> Consumed message '{consumerResult.Message.Value}' at: '{consumerResult.TopicPartitionOffset}'.");
+                            _sqlHandler.InsertPerson(consumerResult.Message.Value);
                         }
-                        catch (ConsumeException e)
+                        catch (Exception e) //Consume exception (see. confluent examples.) can be thrown here, if you don't want to stop service on error. TODO: catch different errors.
                         {
-                            _logger.Information($">> Consume Error occured: {e.Error.Reason}");
-                            Console.WriteLine($">> Consume Error occured: {e.Error.Reason}");
+                            _logger.Error($">> Trying to stop service. Consume Error occured: {e}");
+                            Console.WriteLine($">> Trying to stop service. Consume Error occured: {e}");
+                            throw new OperationCanceledException();
                         }
-                    }
+                    }                    
                     _logger.Information($">> Exited Consume Loop.");
                     Console.WriteLine($">> Exited Consume Loop.");                    
                 }
@@ -90,6 +97,11 @@ namespace KafkaMessagingService
                     Console.WriteLine($">> Kafka consumer closed: '{e}'.");
                 }
             }
+
+            //Getting out of the loop = kill the service.
+            _logger.Error($">> Trying to kill service.");
+            Console.WriteLine($">> Trying to kill service.");
+            Environment.Exit(-1);
 
         }
     }

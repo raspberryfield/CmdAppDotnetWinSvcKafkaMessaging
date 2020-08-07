@@ -5,6 +5,7 @@
 * So the application can be run as a Windows service, the library Topshelf is used.
 * Communicate with kafka topic, library Confluent.Kafka is needed.
 * Handle protobuf format, library Google.Protobuf is needed.
+* If using ADO.NET -> System.Data.SqlClient;
 
 #Protobuf
 * Create a class from a .proto file with the protoc compiler.
