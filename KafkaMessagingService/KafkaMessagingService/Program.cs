@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Raspberryfield.Protobuf.Person;
+using System;
 using Topshelf;
 
 namespace KafkaMessagingService
@@ -9,31 +10,31 @@ namespace KafkaMessagingService
         {
             //init() Logger instance - will be used over whole application.
             var logger = LogHandler.Logger;
-            logger.Information(">> Application started.");
-            Console.WriteLine(">> Application started.");
+            logger.Information(">> Service started.");
+            Console.WriteLine(">> Service started.");
 
             try
             {
                 //var config = GetJsonConfig();
                 //Console.WriteLine("json-config: " + config["key1"]);//Example how to access configurations.
-
+                               
                 //create a KafkaConsumer
-                var consumer = KafkaConsumer.Consumer;//TODO add logger and deserializer as dependencies.
+                var consumer = KafkaConsumer.Consumer;
 
                 var exitCode = HostFactory.Run(x =>
                 {
-                    x.Service<MessageService>(s =>
+                    x.Service<KafkaMessageService>(s =>
                     {
-                        s.ConstructUsing(messageService => new MessageService(logger));
-                        s.WhenStarted(messageService => messageService.Start());
-                        s.WhenStopped(messageService => messageService.Stop());
+                        s.ConstructUsing(kafkaMessageService => new KafkaMessageService(logger, consumer));
+                        s.WhenStarted(kafkaMessageService => kafkaMessageService.Start());
+                        s.WhenStopped(kafkaMessageService => kafkaMessageService.Stop());
                     });
 
                     x.RunAsLocalSystem();
 
-                    x.SetServiceName("MyMessageService");
-                    x.SetDisplayName("My Message Service");
-                    x.SetDescription("This is my test.");
+                    x.SetServiceName("MyKafkaMessageService");//TODO: change these settings.
+                    x.SetDisplayName("My Kafka Message Service");
+                    x.SetDescription("This is my service that handles messages from a local Kafka-cluster.");
 
                 });
 

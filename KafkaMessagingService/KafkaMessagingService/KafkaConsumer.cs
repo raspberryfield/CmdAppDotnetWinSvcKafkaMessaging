@@ -10,9 +10,13 @@ namespace KafkaMessagingService
     class KafkaConsumer
     {
         public static IConsumer<Ignore, Person> Consumer { get; set; }
+        private static Logger _logger;
+        private static ProtoDeserializer<Person> _protoDeserializer;
 
-        static KafkaConsumer()//Todo, add logger and ProtoDeserializer as dependency injections.
+        static  KafkaConsumer()
         {
+            _logger = LogHandler.Logger;
+            _protoDeserializer = new ProtoDeserializer<Person>();           
             Consumer = CreateKafkaConsumer();
         }
 
@@ -26,10 +30,10 @@ namespace KafkaMessagingService
             };
 
             var consumer = new ConsumerBuilder<Ignore, Person>(consumerConfig)
-                .SetValueDeserializer(new ProtoDeserializer<Person>())
+                .SetValueDeserializer(_protoDeserializer)
                 .SetErrorHandler((_, e) => { 
                     Console.WriteLine($"Error: {e.Reason}");
-                    LogHandler.Logger.Error(e.Reason);
+                    _logger.Error(e.Reason);
                 })
                 .Build();
             return consumer;
