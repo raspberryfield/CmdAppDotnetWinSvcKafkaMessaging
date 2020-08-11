@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Raspberryfield.Protobuf.Person;
+using Serilog;
 using Serilog.Core;
 using System;
 using System.Collections.Generic;
@@ -8,15 +9,17 @@ using System.Text;
 namespace KafkaMessagingService
 {
     class KafkaConsumer
-    {
-        public static IConsumer<Ignore, Person> Consumer { get; set; }
-        private static Logger _logger;
-        private static ProtoDeserializer<Person> _protoDeserializer;
+    {        
+        public IConsumer<Ignore, Person> Consumer { get; set; }
 
-        static  KafkaConsumer()
+        private static ILogger _logger;
+        private static ProtoDeserializer<Person> _protoDeserializer;
+        
+
+        public  KafkaConsumer(ILogger logger, ProtoDeserializer<Person> protoDeserializer)
         {
-            _logger = LogHandler.Logger;
-            _protoDeserializer = new ProtoDeserializer<Person>();           
+            _logger = logger;
+            _protoDeserializer = protoDeserializer;           
             Consumer = CreateKafkaConsumer();
         }
 
@@ -32,8 +35,8 @@ namespace KafkaMessagingService
             var consumer = new ConsumerBuilder<Ignore, Person>(consumerConfig)
                 .SetValueDeserializer(_protoDeserializer)
                 .SetErrorHandler((_, e) => { 
-                    Console.WriteLine($"Error: {e.Reason}");
-                    _logger.Error(e.Reason);
+                    Console.WriteLine($" >> Error Consumer: {e.Reason}");
+                    _logger.Error($" >> Error Consumer: {e.Reason}");
                 })
                 .Build();
             return consumer;

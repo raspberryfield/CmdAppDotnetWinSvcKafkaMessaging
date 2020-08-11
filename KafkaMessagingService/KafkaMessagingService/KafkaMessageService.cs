@@ -96,12 +96,17 @@ namespace KafkaMessagingService
                     _logger.Information($">> Kafka consumer closed: '{e}'.");
                     Console.WriteLine($">> Kafka consumer closed: '{e}'.");
                 }
-            }
 
+                _logger.Information($">> End using Kafka consumer.");
+                Console.WriteLine($">> End using Kafka consumer.");
+
+            }
             //Getting out of the loop = kill the service.
-            _logger.Error($">> Trying to kill service.");
-            Console.WriteLine($">> Trying to kill service.");
-            Environment.Exit(-1);
+            //_logger.Error($">> Trying to kill service.");
+            //Console.WriteLine($">> Trying to kill service.");
+            //Environment.Exit(-1);
+            _logger.Information($">> End MainMessageService()");
+            Console.WriteLine($">> End MainMessageService()");
 
         }
     }

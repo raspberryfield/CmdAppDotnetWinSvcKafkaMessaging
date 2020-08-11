@@ -9,13 +9,11 @@ namespace KafkaMessagingService
 {
     class SQLhandler
     {
-        private static string _connectionString;
-        
+        private static string _connectionString;        
 
         public SQLhandler()
         {
-            _connectionString = "Data Source = localhost; initial catalog = Slask; Integrated Security = True;";
-            
+            _connectionString = "Data Source = localhost; initial catalog = Slask; Integrated Security = True;";            
         }
 
         public void InsertPerson(Person person)
@@ -36,7 +34,6 @@ namespace KafkaMessagingService
                 // Call Prepare after setting the Commandtext and Parameters.
                 command.Prepare();
                 command.ExecuteNonQuery();
-
             }
         }           
 

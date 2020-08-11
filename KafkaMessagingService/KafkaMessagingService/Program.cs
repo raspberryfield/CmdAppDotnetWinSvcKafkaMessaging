@@ -19,7 +19,8 @@ namespace KafkaMessagingService
                 //Console.WriteLine("json-config: " + config["key1"]);//Example how to access configurations.
                                
                 //create a KafkaConsumer
-                var consumer = KafkaConsumer.Consumer;
+                var consumer = new KafkaConsumer(logger, new ProtoDeserializer<Person>()).Consumer;
+                                
                 //Create SQL Handler - connections etc.
                 var sqlHandler = new SQLhandler();
                 
