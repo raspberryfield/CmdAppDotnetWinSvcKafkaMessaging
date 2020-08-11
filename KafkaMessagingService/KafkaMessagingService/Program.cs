@@ -46,8 +46,11 @@ namespace KafkaMessagingService
             }
             catch (Exception e)
             {
-                logger.Error(e.ToString());
-                Console.WriteLine(e.ToString());
+                //TODO. exit program here as well.?
+                logger.Error(">> Unforseen error: " + e.ToString());
+                Console.WriteLine(">> Unforseen error: " + e.ToString());
+                Environment.Exit(-1);
+                
             }
 
         }

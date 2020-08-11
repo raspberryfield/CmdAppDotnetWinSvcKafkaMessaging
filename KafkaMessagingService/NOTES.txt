@@ -11,3 +11,7 @@
 * Create a class from a .proto file with the protoc compiler.
 * protoc -I=$SRC_DIR --csharp_out=$DST_DIR $SRC_DIR/person.proto
 > protoc -I=. --csharp_out=. ./person.proto
+
+#Host file
+* I added one row to C:\Windows\System32\drivers\etc\hosts
+172.17.209.219 ubuntuserver01
